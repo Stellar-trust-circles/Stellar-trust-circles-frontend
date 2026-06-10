@@ -1,121 +1,133 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect } from 'react'
 import './App.css'
+import Navbar from './components/Navbar'
+import { useStellar } from './hooks/useStellar'
+
+// Enter your Soroban Contract ID here
+const CONTRACT_ID = "";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { 
+    loading, 
+    error, 
+    circleStatus, 
+    fetchStatus, 
+    handleContribute, 
+    handleReleasePayout 
+  } = useStellar(CONTRACT_ID);
+
+  useEffect(() => {
+    if (CONTRACT_ID) {
+      fetchStatus();
+    }
+  }, [fetchStatus]);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-container">
+      <Navbar />
+      
+      <main className="main-content">
+        <header className="page-header">
+          <h1>Trust Circles</h1>
+          <p>Secure, transparent savings circles powered by Stellar Soroban.</p>
+        </header>
 
-      <div className="ticks"></div>
+        <div className="dashboard-grid">
+          <div className="main-col">
+            <section className="card">
+              <div className="card-title">
+                <span>Circle Dashboard</span>
+                {circleStatus && (
+                  <span className={`status-badge ${circleStatus.active ? 'status-active' : 'status-pending'}`}>
+                    {circleStatus.active ? 'Active' : 'Pending'}
+                  </span>
+                )}
+              </div>
+              
+              {!CONTRACT_ID ? (
+                <div style={{ padding: '20px', textAlign: 'center', border: '2px dashed #e5e7eb', borderRadius: '12px' }}>
+                  <p style={{ color: '#6b7280', marginBottom: '16px' }}>
+                    Welcome! To get started, please provide a Soroban Contract ID in <code>src/App.jsx</code>.
+                  </p>
+                  <a 
+                    href="/create" 
+                    className="btn btn-primary"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    Create New Circle
+                  </a>
+                </div>
+              ) : (
+                <>
+                  {loading && <p>Loading contract state...</p>}
+                  {error && <div style={{ padding: '12px', background: '#FEF2F2', color: '#B91C1C', borderRadius: '8px', marginBottom: '20px' }}>{error}</div>}
+                  
+                  {!loading && circleStatus ? (
+                    <div className="stats-container">
+                      <div className="stat-item">
+                        <span className="stat-label">Total Pool</span>
+                        <span className="stat-value">{circleStatus.balance || '0.00'} XLM</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">Your Contribution</span>
+                        <span className="stat-value">100 XLM</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">Members</span>
+                        <span className="stat-value">8 / 12</span>
+                      </div>
+                    </div>
+                  ) : (
+                    !loading && <p style={{ color: '#6b7280', margin: '20px 0' }}>Searching for circle...</p>
+                  )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+                  <div className="button-group">
+                    <button 
+                      className="btn btn-primary"
+                      onClick={handleContribute}
+                      disabled={loading}
+                    >
+                      {loading ? 'Processing...' : 'Contribute Now'}
+                    </button>
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={handleReleasePayout}
+                      disabled={loading}
+                    >
+                      Request Payout
+                    </button>
+                  </div>
+                </>
+              )}
+            </section>
+          </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          <aside className="side-col">
+            <div className="info-box">
+              <h3>How it works</h3>
+              <p>
+                Trust Circles allow you to save with friends. Every month, members contribute a set amount, 
+                and one member receives the full payout. Everything is governed by a secure Soroban smart contract.
+              </p>
+              <ul style={{ paddingLeft: '20px', marginTop: '12px', fontSize: '14px', color: '#4338CA' }}>
+                <li>Automatic payouts</li>
+                <li>Verifiable reputation</li>
+                <li>Zero-fee management</li>
+              </ul>
+            </div>
+            
+            {CONTRACT_ID && (
+              <div style={{ marginTop: '24px', padding: '20px', border: '1px dashed #d1d5db', borderRadius: '12px' }}>
+                <h4 style={{ margin: '0 0 8px', fontSize: '14px' }}>Contract Info</h4>
+                <code style={{ fontSize: '11px', wordBreak: 'break-all', display: 'block', background: '#f3f4f6' }}>
+                  {CONTRACT_ID}
+                </code>
+              </div>
+            )}
+          </aside>
+        </div>
+      </main>
+    </div>
   )
 }
 
