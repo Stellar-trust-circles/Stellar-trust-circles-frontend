@@ -1,10 +1,10 @@
-// src/components/Navbar.jsx
+// src/components/Navbar.tsx
 import { useState } from "react";
-import { isConnected, getAddress, setAllowed } from "@stellar/freighter-api";
+import { isConnected, getPublicKey, setAllowed } from "@stellar/freighter-api";
 
 export default function Navbar() {
-  const [address, setAddress] = useState(null);
-  const [connecting, setConnecting] = useState(false);
+  const [address, setAddress] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState<boolean>(false);
 
   async function connectWallet() {
     setConnecting(true);
@@ -13,8 +13,8 @@ export default function Navbar() {
       if (!connected) {
         await setAllowed();
       }
-      const { address: addr } = await getAddress();
-      setAddress(addr);
+      const publicKey = await getPublicKey();
+      setAddress(publicKey);
     } catch (err) {
       console.error("Wallet connection failed:", err);
     } finally {

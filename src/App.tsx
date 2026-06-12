@@ -38,8 +38,8 @@ function App() {
               <div className="card-title">
                 <span>Circle Dashboard</span>
                 {circleStatus && (
-                  <span className={`status-badge ${circleStatus.active ? 'status-active' : 'status-pending'}`}>
-                    {circleStatus.active ? 'Active' : 'Pending'}
+                  <span className={`status-badge ${circleStatus.isActive ? 'status-active' : 'status-pending'}`}>
+                    {circleStatus.isActive ? 'Active' : 'Pending'}
                   </span>
                 )}
               </div>
@@ -47,7 +47,7 @@ function App() {
               {!CONTRACT_ID ? (
                 <div style={{ padding: '20px', textAlign: 'center', border: '2px dashed #e5e7eb', borderRadius: '12px' }}>
                   <p style={{ color: '#6b7280', marginBottom: '16px' }}>
-                    Welcome! To get started, please provide a Soroban Contract ID in <code>src/App.jsx</code>.
+                    Welcome! To get started, please provide a Soroban Contract ID in <code>src/App.tsx</code>.
                   </p>
                   <a 
                     href="/create" 
@@ -65,16 +65,16 @@ function App() {
                   {!loading && circleStatus ? (
                     <div className="stats-container">
                       <div className="stat-item">
-                        <span className="stat-label">Total Pool</span>
-                        <span className="stat-value">{circleStatus.balance || '0.00'} XLM</span>
+                        <span className="stat-label">Circle Name</span>
+                        <span className="stat-value">{circleStatus.name}</span>
                       </div>
                       <div className="stat-item">
-                        <span className="stat-label">Your Contribution</span>
-                        <span className="stat-value">100 XLM</span>
+                        <span className="stat-label">Contribution</span>
+                        <span className="stat-value">{circleStatus.contributionUsdc} USDC</span>
                       </div>
                       <div className="stat-item">
                         <span className="stat-label">Members</span>
-                        <span className="stat-value">8 / 12</span>
+                        <span className="stat-value">{circleStatus.members.length} members</span>
                       </div>
                     </div>
                   ) : (

@@ -1,19 +1,19 @@
-// src/hooks/useStellar.js
+// src/hooks/useStellar.ts
 // Wraps all contract interactions for use in React components
 
 import { useState, useCallback } from "react";
 import {
   getCircleStatus,
-  createCircle,
   contribute,
   releasePayout,
   getReputation,
+  CircleStatus,
 } from "../lib/stellar";
 
-export function useStellar(contractId) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [circleStatus, setCircleStatus] = useState(null);
+export function useStellar(contractId: string) {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [circleStatus, setCircleStatus] = useState<CircleStatus | null>(null);
 
   const fetchStatus = useCallback(async () => {
     if (!contractId) return;
@@ -23,7 +23,7 @@ export function useStellar(contractId) {
       const status = await getCircleStatus(contractId);
       setCircleStatus(status);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,7 @@ export function useStellar(contractId) {
         await contribute(contractId);
         await fetchStatus();
       } catch (err) {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -53,7 +53,7 @@ export function useStellar(contractId) {
         await releasePayout(contractId);
         await fetchStatus();
       } catch (err) {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -62,7 +62,7 @@ export function useStellar(contractId) {
   );
 
   const fetchReputation = useCallback(
-    async (address) => {
+    async (address: string) => {
       return await getReputation(contractId, address);
     },
     [contractId]
