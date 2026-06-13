@@ -21,6 +21,16 @@ const NETWORK_PASSPHRASE = Networks.TESTNET;
 
 const server = new rpc.Server(RPC_URL);
 
+const FACTORY_CONTRACT_ID = "C..."; // Replace with actual factory contract ID
+
+export async function checkFreighter() {
+  return await isConnected();
+}
+
+export async function getWalletAddress() {
+  return await getPublicKey();
+}
+
 /**
  * Ensures Freighter is connected and returns the public key.
  */
@@ -130,13 +140,14 @@ export async function getCircleStatus(contractId: string): Promise<CircleStatus>
   return result as CircleStatus;
 }
 
-export async function createCircle(contractId: string, params: CreateCircleParams): Promise<rpc.Api.GetTransactionResponse> {
+export async function createCircle(params: CreateCircleParams, _userAddress: string): Promise<rpc.Api.GetTransactionResponse> {
   const args = [
     nativeToScVal(params.name, { type: "string" }),
+    nativeToScVal(params.memberAddresses, { type: "vec", children: { type: "address" } }),
     nativeToScVal(params.contributionUsdc, { type: "u128" }),
     nativeToScVal(params.cycleLengthSecs, { type: "u32" }),
   ];
-  return await call(contractId, "create_circle", args);
+  return await call(FACTORY_CONTRACT_ID, "create_circle", args);
 }
 
 export async function contribute(contractId: string): Promise<rpc.Api.GetTransactionResponse> {
