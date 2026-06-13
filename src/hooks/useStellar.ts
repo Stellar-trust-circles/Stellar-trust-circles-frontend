@@ -10,62 +10,69 @@ import {
   CircleStatus,
 } from "../lib/stellar";
 
-export function useStellar(contractId: string) {
+export function useStellar(initialContractId?: string) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [circleStatus, setCircleStatus] = useState<CircleStatus | null>(null);
 
-  const fetchStatus = useCallback(async () => {
-    if (!contractId) return;
+  const fetchStatus = useCallback(async (contractId?: string) => {
+    const id = contractId || initialContractId;
+    if (!id) return;
     setLoading(true);
     setError(null);
     try {
-      const status = await getCircleStatus(contractId);
+      const status = await getCircleStatus(id);
       setCircleStatus(status);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
-  }, [contractId]);
+  }, [initialContractId]);
 
   const handleContribute = useCallback(
-    async () => {
+    async (contractId?: string) => {
+      const id = contractId || initialContractId;
+      if (!id) return;
       setLoading(true);
       setError(null);
       try {
-        await contribute(contractId);
-        await fetchStatus();
+        await contribute(id);
+        await fetchStatus(id);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
     },
-    [contractId, fetchStatus]
+    [initialContractId, fetchStatus]
   );
 
   const handleReleasePayout = useCallback(
-    async () => {
+    async (contractId?: string) => {
+      const id = contractId || initialContractId;
+      if (!id) return;
       setLoading(true);
       setError(null);
       try {
-        await releasePayout(contractId);
-        await fetchStatus();
+        await releasePayout(id);
+        await fetchStatus(id);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
     },
-    [contractId, fetchStatus]
+    [initialContractId, fetchStatus]
   );
 
   const fetchReputation = useCallback(
-    async (address: string) => {
-      return await getReputation(contractId, address);
+    async (address: string, contractId?: string) => {
+      const id = contractId || initialContractId;
+      if (!id) return 0;
+      return await getReputation(id, address);
     },
-    [contractId]
+    [initialContractId]
   );
 
   return {
