@@ -143,6 +143,7 @@ export async function getCircleStatus(contractId: string): Promise<CircleStatus>
 export async function createCircle(params: CreateCircleParams, _userAddress: string): Promise<rpc.Api.GetTransactionResponse> {
   const args = [
     nativeToScVal(params.name, { type: "string" }),
+    // @ts-ignore
     nativeToScVal(params.memberAddresses, { type: "vec", children: { type: "address" } }),
     nativeToScVal(params.contributionUsdc, { type: "u128" }),
     nativeToScVal(params.cycleLengthSecs, { type: "u32" }),
