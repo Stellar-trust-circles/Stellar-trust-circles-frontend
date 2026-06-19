@@ -1,134 +1,69 @@
-import { useEffect } from 'react'
-import './App.css'
-import Navbar from './components/Navbar'
-import { useStellar } from './hooks/useStellar'
-
-// Enter your Soroban Contract ID here
-const CONTRACT_ID = "";
+import { useState, useEffect } from "react";
+import Navbar from "./components/Navbar";
+import HomePage from "./components/HomePage";
+import CirclesView from "./components/CirclesView";
+import CreateCircle from "./components/CreateCircle";
+import Footer from "./components/Footer";
+import MobileNavbar from "./components/MobileNavbar";
+import WalletView from "./components/WalletView";
+import ProfileView from "./components/ProfileView";
+import { useWallet } from "./hooks/useWallet";
 
 function App() {
-  const { 
-    loading, 
-    error, 
-    circleStatus, 
-    fetchStatus, 
-    handleContribute, 
-    handleReleasePayout 
-  } = useStellar(CONTRACT_ID);
+  const [view, setView] = useState<string>("home");
+  const { address: walletAddress, connect: connectWallet } = useWallet();
 
   useEffect(() => {
-    if (CONTRACT_ID) {
-      fetchStatus();
-    }
-  }, [fetchStatus]);
+    window.scrollTo(0, 0);
+  }, [view]);
+
+  useEffect(() => {
+    const syncViewFromLocation = () => {
+      const path = window.location.pathname.substring(1);
+      setView(["circles", "create", "wallet", "profile"].includes(path) ? path : "home");
+    };
+
+    syncViewFromLocation();
+    window.addEventListener("popstate", syncViewFromLocation);
+    return () => window.removeEventListener("popstate", syncViewFromLocation);
+  }, []);
+
+  const handleSetView = (newView: string) => {
+    setView(newView);
+    window.history.pushState({}, "", `/${newView === "home" ? "" : newView}`);
+  };
+
+  if (view === "home") {
+    return (
+      <HomePage
+        currentView={view}
+        walletAddress={walletAddress}
+        onNavigate={handleSetView}
+        onConnectWallet={() => void connectWallet()}
+      />
+    );
+  }
 
   return (
-    <div className="app-container">
-      <Navbar />
-      
-      <main className="main-content">
-        <header className="page-header">
-          <h1>Trust Circles</h1>
-          <p>Secure, transparent savings circles powered by Stellar Soroban.</p>
-        </header>
+    <div className="min-h-screen bg-[#FAF8FC] text-on-surface transition-colors duration-200">
+      <Navbar
+        currentView={view}
+        onNavigate={handleSetView}
+        onConnectWallet={() => void connectWallet()}
+        walletAddress={walletAddress}
+      />
 
-        <div className="dashboard-grid">
-          <div className="main-col">
-            <section className="card">
-              <div className="card-title">
-                <span>Circle Dashboard</span>
-                {circleStatus && (
-                  <span className={`status-badge ${circleStatus.isActive ? 'status-active' : 'status-pending'}`}>
-                    {circleStatus.isActive ? 'Active' : 'Pending'}
-                  </span>
-                )}
-              </div>
-              
-              {!CONTRACT_ID ? (
-                <div style={{ padding: '20px', textAlign: 'center', border: '2px dashed #e5e7eb', borderRadius: '12px' }}>
-                  <p style={{ color: '#6b7280', marginBottom: '16px' }}>
-                    Welcome! To get started, please provide a Soroban Contract ID in <code>src/App.tsx</code>.
-                  </p>
-                  <a 
-                    href="/create" 
-                    className="btn btn-primary"
-                    style={{ textDecoration: 'none' }}
-                  >
-                    Create New Circle
-                  </a>
-                </div>
-              ) : (
-                <>
-                  {loading && <p>Loading contract state...</p>}
-                  {error && <div style={{ padding: '12px', background: '#FEF2F2', color: '#B91C1C', borderRadius: '8px', marginBottom: '20px' }}>{error}</div>}
-                  
-                  {!loading && circleStatus ? (
-                    <div className="stats-container">
-                      <div className="stat-item">
-                        <span className="stat-label">Circle Name</span>
-                        <span className="stat-value">{circleStatus.name}</span>
-                      </div>
-                      <div className="stat-item">
-                        <span className="stat-label">Contribution</span>
-                        <span className="stat-value">{circleStatus.contributionUsdc} USDC</span>
-                      </div>
-                      <div className="stat-item">
-                        <span className="stat-label">Members</span>
-                        <span className="stat-value">{circleStatus.members.length} members</span>
-                      </div>
-                    </div>
-                  ) : (
-                    !loading && <p style={{ color: '#6b7280', margin: '20px 0' }}>Searching for circle...</p>
-                  )}
-
-                  <div className="button-group">
-                    <button 
-                      className="btn btn-primary"
-                      onClick={handleContribute}
-                      disabled={loading}
-                    >
-                      {loading ? 'Processing...' : 'Contribute Now'}
-                    </button>
-                    <button 
-                      className="btn btn-secondary"
-                      onClick={handleReleasePayout}
-                      disabled={loading}
-                    >
-                      Request Payout
-                    </button>
-                  </div>
-                </>
-              )}
-            </section>
-          </div>
-
-          <aside className="side-col">
-            <div className="info-box">
-              <h3>How it works</h3>
-              <p>
-                Trust Circles allow you to save with friends. Every month, members contribute a set amount, 
-                and one member receives the full payout. Everything is governed by a secure Soroban smart contract.
-              </p>
-              <ul style={{ paddingLeft: '20px', marginTop: '12px', fontSize: '14px', color: '#4338CA' }}>
-                <li>Automatic payouts</li>
-                <li>Verifiable reputation</li>
-                <li>Zero-fee management</li>
-              </ul>
-            </div>
-            
-            {CONTRACT_ID && (
-              <div style={{ marginTop: '24px', padding: '20px', border: '1px dashed #d1d5db', borderRadius: '12px' }}>
-                <h4 style={{ margin: '0 0 8px', fontSize: '14px' }}>Contract Info</h4>
-                <code style={{ fontSize: '11px', wordBreak: 'break-all', display: 'block', background: '#f3f4f6' }}>
-                  {CONTRACT_ID}
-                </code>
-              </div>
-            )}
-          </aside>
-        </div>
+      <main className="mx-auto max-w-container-max px-margin-mobile pb-24 pt-32 md:px-gutter">
+        {view === "circles" && <CirclesView />}
+        {view === "create" && <CreateCircle setView={handleSetView} />}
+        {view === "wallet" && <WalletView />}
+        {view === "profile" && <ProfileView />}
       </main>
+
+      <Footer />
+      <MobileNavbar currentView={view} onNavigate={handleSetView} />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
