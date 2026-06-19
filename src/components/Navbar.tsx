@@ -1,77 +1,73 @@
-import { useWallet } from "../hooks/useWallet";
+import React from 'react';
 
-export default function Navbar() {
-  const { address, connecting, error, connect, disconnect } = useWallet();
-
-  const short = address
-    ? `${address.slice(0, 4)}...${address.slice(-4)}`
-    : null;
-
-  return (
-    <nav style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "14px 24px",
-      borderBottom: "1px solid #e5e7eb",
-    }}>
-      <div style={{ fontWeight: 600, fontSize: 16 }}>✦ Trust Circles</div>
-
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <a href="/" style={linkStyle}>Home</a>
-        <a href="/create" style={linkStyle}>New Circle</a>
-
-        {error && (
-          <span style={{ fontSize: 12, color: "#dc2626" }}>{error}</span>
-        )}
-
-        {address ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={addressBadge}>{short}</span>
-            <button onClick={disconnect} style={ghostBtn}>
-              Disconnect
-            </button>
-          </div>
-        ) : (
-          <button onClick={connect} disabled={connecting} style={primaryBtn}>
-            {connecting ? "Connecting..." : "Connect Wallet"}
-          </button>
-        )}
-      </div>
-    </nav>
-  );
+interface NavbarProps {
+  currentView?: string;
+  onNavigate?: (view: string) => void;
+  onConnectWallet?: () => void;
+  walletAddress?: string | null;
 }
 
-const linkStyle: React.CSSProperties = {
-  fontSize: 14,
-  color: "#374151",
-  textDecoration: "none",
+const navItems = [
+  { key: "home", label: "Home" },
+  { key: "circles", label: "Circles" },
+  { key: "wallet", label: "Wallet" },
+  { key: "profile", label: "Profile" },
+] as const;
+
+const Navbar: React.FC<NavbarProps> = ({
+  currentView = "home",
+  onNavigate,
+  onConnectWallet,
+  walletAddress,
+}) => {
+  return (
+    <header className="fixed top-0 z-50 w-full border-b border-outline-variant/30 bg-background/90 backdrop-blur-md dark:bg-inverse-surface/90">
+      <nav className="mx-auto flex w-full max-w-container-max items-center justify-between px-gutter py-sm">
+        <button
+          type="button"
+          onClick={() => onNavigate?.("home")}
+          className="text-headline-md font-display-lg text-primary transition-opacity hover:opacity-90 dark:text-inverse-primary"
+        >
+          Trust Circles
+        </button>
+        <div className="hidden md:flex items-center gap-md">
+          {navItems.map((item) => {
+            const active = currentView === item.key;
+
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => onNavigate?.(item.key)}
+                className={`rounded-full px-3 py-1 transition-colors duration-200 ease-in-out ${
+                  active
+                    ? "font-bold text-primary dark:text-inverse-primary"
+                    : "text-on-surface-variant hover:bg-surface-variant/20 hover:text-primary dark:text-surface-variant dark:hover:bg-surface-variant/10"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-sm">
+          {walletAddress && (
+            <span className="hidden sm:inline-flex rounded-full border border-outline-variant/40 bg-surface-container-low px-3 py-1 font-data-code text-[11px] text-on-surface-variant">
+              {walletAddress.slice(0, 6)}…{walletAddress.slice(-4)}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onConnectWallet}
+            className="flex items-center gap-2 rounded-full bg-primary px-sm py-xs font-label-caps text-label-caps text-on-primary transition-all hover:opacity-90"
+          >
+            <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+            {walletAddress ? "Wallet Connected" : "Connect Wallet"}
+          </button>
+        </div>
+      </nav>
+    </header>
+  );
 };
 
-const addressBadge: React.CSSProperties = {
-  fontSize: 13,
-  background: "#f3f4f6",
-  padding: "6px 12px",
-  borderRadius: 20,
-  fontFamily: "monospace",
-};
-
-const primaryBtn: React.CSSProperties = {
-  background: "#7C3AED",
-  color: "white",
-  border: "none",
-  padding: "8px 16px",
-  borderRadius: 8,
-  fontSize: 14,
-  cursor: "pointer",
-};
-
-const ghostBtn: React.CSSProperties = {
-  background: "none",
-  border: "1px solid #d1d5db",
-  color: "#374151",
-  padding: "6px 12px",
-  borderRadius: 8,
-  fontSize: 13,
-  cursor: "pointer",
-};
+export default Navbar;
