@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import HomePage from "./components/HomePage";
+import HomeDashboard from "./components/HomeDashboard";
 import CirclesView from "./components/CirclesView";
 import CreateCircle from "./components/CreateCircle";
 import Footer from "./components/Footer";
@@ -11,6 +12,7 @@ import { useWallet } from "./hooks/useWallet";
 
 function App() {
   const [view, setView] = useState<string>("home");
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const { address: walletAddress, connect: connectWallet } = useWallet();
 
   useEffect(() => {
@@ -34,6 +36,17 @@ function App() {
   };
 
   if (view === "home") {
+    if (walletAddress) {
+      return (
+        <HomeDashboard
+          currentView={view}
+          walletAddress={walletAddress}
+          onNavigate={handleSetView}
+          onConnectWallet={() => void connectWallet()}
+          onCreateCircle={() => setShowCreateModal(true)}
+        />
+      );
+    }
     return (
       <HomePage
         currentView={view}
@@ -62,6 +75,14 @@ function App() {
 
       <Footer />
       <MobileNavbar currentView={view} onNavigate={handleSetView} />
+
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-surface rounded-xl p-lg max-w-lg w-full mx-4">
+            <CreateCircle setView={(v) => { setShowCreateModal(false); handleSetView(v); }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
